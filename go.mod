@@ -5,7 +5,10 @@ go 1.23.0
 require (
 	fyne.io/fyne/v2 v2.5.1
 	github.com/gdamore/tcell/v2 v2.7.4
+	github.com/joho/godotenv v1.5.1
+	github.com/notnil/chess v1.9.0
 	github.com/rivo/tview v0.0.0-20240818110301-fd649dbf1223
+	github.com/sashabaranov/go-openai v1.29.1
 	github.com/sirupsen/logrus v1.8.1
 )
 
