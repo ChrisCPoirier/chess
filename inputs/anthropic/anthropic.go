@@ -7,11 +7,14 @@ import (
 	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/option"
 	log "github.com/sirupsen/logrus"
 )
 
 func New(name, color string) Anthropic {
-	client := anthropic.NewClient(os.Getenv("ANTHROPIC_API_KEY"))
+	client := anthropic.NewClient(
+		option.WithAPIKey(os.Getenv("ANTHROPIC_API_KEY")),
+	)
 	return Anthropic{
 		name:   name,
 		color:  color,
@@ -34,30 +37,19 @@ func (a Anthropic) Ask(current string) (string, error) {
 		prompt = fmt.Sprintf(`%s It is your turn, the board is in the default position and you are the first to move`, defaultPrompt)
 	}
 
-	resp, err := a.client.Messages.Create(
-		context.Background(),
-		&anthropic.MessageCreateParams{
-			Model: anthropic.Claude3Sonnet20240229,
-			MaxTokens: 100,
-			Messages: []anthropic.Message{
-				{
-					Role: anthropic.MessageRoleUser,
-					Content: []anthropic.Content{
-						{
-							Type: anthropic.ContentTypeText,
-							Text: prompt,
-						},
-					},
-				},
-			},
-		},
-	)
+	resp, err := a.client.Messages.New(context.TODO(), anthropic.MessageNewParams{
+		Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		MaxTokens: anthropic.F(int64(1024)),
+		Messages: anthropic.F([]anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock(prompt)),
+		}),
+	})
 
 	if err != nil {
 		return "", err
 	}
 
-	if len(resp.Content) == 0 || resp.Content[0].Type != anthropic.ContentTypeText {
+	if len(resp.Content) == 0 || resp.Content[0].Type != anthropic.ContentBlockTypeText {
 		return "", fmt.Errorf("unexpected response format")
 	}
 
