@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/ChrisCPoirier/chess/board"
 	"github.com/ChrisCPoirier/chess/inputs"
+	"github.com/ChrisCPoirier/chess/inputs/anthropic"
 	"github.com/ChrisCPoirier/chess/inputs/openai"
 	"github.com/joho/godotenv"
 	"github.com/notnil/chess"
@@ -34,8 +35,8 @@ func main() {
 
 	myWindow.SetContent(hbox)
 
-	player1 := openai.New(`OpenAI 1`, `white`)
-	player2 := openai.New(`OpenAI 2`, `black`)
+	player1 := openai.New(`OpenAI`, `white`)
+	player2 := anthropic.New(`Anthropic`, `black`)
 
 	players := []inputs.Player{player1, player2}
 	game := chess.NewGame()
