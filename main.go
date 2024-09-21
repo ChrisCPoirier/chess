@@ -5,6 +5,10 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/widget"
 	"github.com/ChrisCPoirier/chess/board"
 	"github.com/ChrisCPoirier/chess/inputs"
 	"github.com/ChrisCPoirier/chess/inputs/openai"
@@ -26,10 +30,12 @@ func main() {
 
 	board := board.New()
 
-	myWindow.SetContent(board.Grid)
+	hbox := container.New(layout.NewVBoxLayout(), board.Grid, LogPane())
 
-	player1 := openai.New(`OpenAI Jimmy`, `white`)
-	player2 := openai.New(`OpenAI John`, `black`)
+	myWindow.SetContent(hbox)
+
+	player1 := openai.New(`OpenAI 1`, `white`)
+	player2 := openai.New(`OpenAI 2`, `black`)
 
 	players := []inputs.Player{player1, player2}
 	game := chess.NewGame()
@@ -63,4 +69,20 @@ func Loop(window fyne.Window, board *board.Board, game *chess.Game, players []in
 		board.Grid.Refresh()
 		i++
 	}
+
+	dialog.ShowConfirm(`game complete!`, game.Outcome().String(), func(bool) { window.Close() }, window)
+}
+
+func LogPane() *fyne.Container {
+	logs := []fyne.CanvasObject{
+		widget.NewLabel(`logs...`),
+		widget.NewLabel(``),
+		widget.NewLabel(``),
+		widget.NewLabel(``),
+		widget.NewLabel(``),
+	}
+	logsContaner := container.NewVBox(logs...)
+	logsContaner.Resize(fyne.NewSize(400, 400))
+
+	return logsContaner
 }
