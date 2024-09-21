@@ -25,3 +25,7 @@ func (h Human) Ask(current string) (string, error) {
 
 	return input, nil
 }
+
+func (h Human) Name() string {
+	return h.name
+}

@@ -67,5 +67,8 @@ func (o OpenAI) SanatizeResponse(s string) string {
 	}
 
 	return s[i+1:]
+}
 
+func (o OpenAI) Name() string {
+	return o.name
 }

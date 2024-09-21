@@ -68,3 +68,7 @@ func (a Anthropic) SanitizeResponse(s string) string {
 
 	return s[i+1:]
 }
+
+func (a Anthropic) Name() string {
+	return a.name
+}
