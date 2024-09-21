@@ -7,12 +7,11 @@ import (
 	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
 	log "github.com/sirupsen/logrus"
 )
 
 func New(name, color string) Anthropic {
-	client := anthropic.NewClient(option.WithAPIKey(os.Getenv(`ANTHROPIC_API_KEY`)))
+	client := anthropic.NewClient(os.Getenv("ANTHROPIC_API_KEY"))
 	return Anthropic{
 		name:   name,
 		color:  color,
@@ -35,27 +34,41 @@ func (a Anthropic) Ask(current string) (string, error) {
 		prompt = fmt.Sprintf(`%s It is your turn, the board is in the default position and you are the first to move`, defaultPrompt)
 	}
 
-	resp, err := a.client.CreateCompletion(
+	resp, err := a.client.Messages.Create(
 		context.Background(),
-		&anthropic.CompletionRequest{
-			Model:     anthropic.ModelClaude2,
-			Prompt:    prompt,
+		&anthropic.MessageCreateParams{
+			Model: anthropic.Claude3Sonnet20240229,
 			MaxTokens: 100,
+			Messages: []anthropic.Message{
+				{
+					Role: anthropic.MessageRoleUser,
+					Content: []anthropic.Content{
+						{
+							Type: anthropic.ContentTypeText,
+							Text: prompt,
+						},
+					},
+				},
+			},
 		},
 	)
 
 	if err != nil {
-		return ``, err
+		return "", err
 	}
 
-	respText := a.SanitizeResponse(resp.Completion)
+	if len(resp.Content) == 0 || resp.Content[0].Type != anthropic.ContentTypeText {
+		return "", fmt.Errorf("unexpected response format")
+	}
+
+	respText := a.SanitizeResponse(resp.Content[0].Text)
 	log.Debugf("response is `%s`", respText)
 
 	return respText, nil
 }
 
 func (a Anthropic) SanitizeResponse(s string) string {
-	i := strings.LastIndex(s, ` `)
+	i := strings.LastIndex(s, " ")
 
 	if i == -1 {
 		return s
