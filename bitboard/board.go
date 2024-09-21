@@ -52,12 +52,12 @@ func New(rows, cols int) *Board {
 	return b
 }
 
-func (g *Board) Paint(values [][]int) *Board {
-	for r, row := range values {
-		for c, _ := range row {
-			// g.cells[r][c].SetText(chess.Display[val])
-			g.cells[r][c].SetTextStyle(tcell.StyleDefault.Attributes())
-		}
-	}
-	return g
-}
+// func (g *Board) Paint(values [][]int) *Board {
+// 	for r, row := range values {
+// 		for c, _ := range row {
+// 			// g.cells[r][c].SetText(chess.Display[val])
+// 			g.cells[r][c].SetTextStyle(tcell.StyleDefault.Attributes())
+// 		}
+// 	}
+// 	return g
+// }

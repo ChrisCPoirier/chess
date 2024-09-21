@@ -30,19 +30,27 @@ type Anthropic struct {
 
 const defaultPrompt = `We are playing chess and you are a chess GM. You MUST respond in Algebraic notation. Do not include additional numbers or periods in your response.`
 
-func (a Anthropic) Ask(current string) (string, error) {
+func (a Anthropic) Ask(current string, invalidAttempts []string) (string, error) {
 	prompt := fmt.Sprintf(`%s It is your turn. You are playing as %s. This is the current board in PGN format: %s`, defaultPrompt, a.color, current)
 
 	if current == "\n *" {
 		prompt = fmt.Sprintf(`%s It is your turn, the board is in the default position and you are the first to move`, defaultPrompt)
 	}
 
+	messages := []anthropic.MessageParam{}
+
+	if len(invalidAttempts) > 0 {
+		prompt = fmt.Sprintf(`%s. Here is a list of moves that are invalid and you WILL NOT attempt %s.`, prompt, invalidAttempts)
+	}
+
+	log.WithField(`player`, a.Name()).Info(prompt)
+
+	messages = append(messages, anthropic.NewUserMessage(anthropic.NewTextBlock(prompt)))
+
 	resp, err := a.client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 		MaxTokens: anthropic.F(int64(1024)),
-		Messages: anthropic.F([]anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock(prompt)),
-		}),
+		Messages:  anthropic.F(messages),
 	})
 
 	if err != nil {

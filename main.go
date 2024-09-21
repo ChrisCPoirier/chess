@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -52,19 +53,16 @@ func Loop(window fyne.Window, board *board.Board, game *chess.Game, players []in
 		time.Sleep(time.Millisecond * 100)
 		turn := i % 2
 
-		move, err := players[turn].Ask(game.String())
+		player := players[turn]
+
+		err := recursiveAsk(player, game, []string{}, 0)
 
 		if err != nil {
-			log.Errorf("%s, try again!", err)
+			log.WithField(`player`, player.Name()).Error(err)
 			continue
 		}
 
-		if err := game.MoveStr(move); err != nil {
-			log.Errorf("%s, try again!", err)
-			continue
-		}
-
-		log.Info(game.String())
+		log.WithField(`player`, player.Name()).Info(game.String())
 
 		board.LoadFromFEN(game.FEN())
 		board.Grid.Refresh()
@@ -72,6 +70,26 @@ func Loop(window fyne.Window, board *board.Board, game *chess.Game, players []in
 	}
 
 	dialog.ShowConfirm(`game complete!`, game.Outcome().String(), func(bool) { window.Close() }, window)
+}
+
+func recursiveAsk(p inputs.Player, game *chess.Game, invalidAttempts []string, depth int) error {
+	if depth > 10 {
+		return errors.New(`max depth exceeded`)
+	}
+
+	move, err := p.Ask(game.String(), invalidAttempts)
+
+	if err != nil {
+		log.WithField(`player`, p.Name()).Error(err)
+		return recursiveAsk(p, game, invalidAttempts, depth+1)
+	}
+
+	if err := game.MoveStr(move); err != nil {
+		log.WithField(`player`, p.Name()).Error(err)
+		return recursiveAsk(p, game, append(invalidAttempts, move), depth+1)
+	}
+
+	return nil
 }
 
 func LogPane() *fyne.Container {

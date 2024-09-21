@@ -28,7 +28,7 @@ type OpenAI struct {
 
 const defaultPrompt = `We are playing chess and you are a chess GM. You MUST respond in Algebraic notation. Do not include additonal numbers or periords in your response.`
 
-func (o OpenAI) Ask(current string) (string, error) {
+func (o OpenAI) Ask(current string, errs []string) (string, error) {
 
 	prompt := fmt.Sprintf(`%s It is your turn. You are playing as %s. This is the current board in PGN format: %s`, defaultPrompt, o.color, current)
 
@@ -36,16 +36,22 @@ func (o OpenAI) Ask(current string) (string, error) {
 		prompt = fmt.Sprintf(`%s It is your turn, the board is in the default position and you are the first to move`, defaultPrompt)
 	}
 
+	messages := []openai.ChatCompletionMessage{}
+
+	for _, err := range errs {
+		messages = append(messages, openai.ChatCompletionMessage{
+			Role:    openai.ChatMessageRoleUser,
+			Content: fmt.Sprintf(`Invalid move %s`, err),
+		})
+	}
+
+	messages = append(messages, openai.ChatCompletionMessage{Role: openai.ChatMessageRoleUser, Content: prompt})
+
 	resp, err := o.client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: openai.GPT4o,
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: prompt,
-				},
-			},
+			Model:    openai.GPT4o,
+			Messages: messages,
 		},
 	)
 

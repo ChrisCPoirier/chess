@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	fyne.io/fyne/v2 v2.5.1
-	github.com/anthropics/anthropic-sdk-go v0.4.1
+	github.com/anthropics/anthropic-sdk-go v0.1.0-alpha.1
 	github.com/gdamore/tcell/v2 v2.7.4
 	github.com/joho/godotenv v1.5.1
 	github.com/notnil/chess v1.9.0
