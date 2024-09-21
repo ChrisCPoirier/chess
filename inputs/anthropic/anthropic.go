@@ -6,12 +6,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/anthropic-ai/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/option"
 	log "github.com/sirupsen/logrus"
 )
 
 func New(name, color string) Anthropic {
-	client := anthropic.NewClient(os.Getenv(`ANTHROPIC_API_KEY`))
+	client := anthropic.NewClient(option.WithAPIKey(os.Getenv(`ANTHROPIC_API_KEY`)))
 	return Anthropic{
 		name:   name,
 		color:  color,
